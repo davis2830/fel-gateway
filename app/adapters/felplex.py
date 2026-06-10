@@ -6,11 +6,16 @@ the gateway's neutral ``InvoiceCreate`` schema (already validated upstream).
 
 API docs: https://documenter.getpostman.com/view/1055317/TVCZYqHT
 
-URLs:
-  Sandbox    https://felplex.stage.plex.lat
-  Production https://felplex.plex.lat
+URLs (Guatemala):
+  Sandbox    https://felplex-gt.stage.plex.lat   (note the ``-gt`` suffix)
+  Production https://app.felplex.com
 
 Auth:    header ``X-Authorization: <api_key>``
+
+FELplex serves multiple countries; the ``-gt`` country suffix in the
+sandbox host is mandatory. A tenant can override ``base_url`` via
+``provider_config`` to point to a different country (e.g. ``-sv`` for
+El Salvador) without changing this adapter.
 Config:  tenant.provider_config = {
             "entity_id": "<entidad>",
             "api_key": "<key>",
@@ -43,9 +48,9 @@ def _base_url(config: dict, ambiente: str) -> str:
     if config.get("base_url"):
         return str(config["base_url"]).rstrip("/")
     return (
-        "https://felplex.plex.lat"
+        "https://app.felplex.com"
         if ambiente == "PRODUCCION"
-        else "https://felplex.stage.plex.lat"
+        else "https://felplex-gt.stage.plex.lat"
     )
 
 

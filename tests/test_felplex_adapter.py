@@ -18,7 +18,7 @@ from app.domain.schemas import (
     NCREReference,
 )
 
-SANDBOX = "https://felplex.stage.plex.lat"
+SANDBOX = "https://felplex-gt.stage.plex.lat"
 
 
 def _payload() -> dict:
