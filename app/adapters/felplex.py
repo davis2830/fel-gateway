@@ -81,7 +81,20 @@ def _validate(config: dict) -> None:
         )
 
 
+_EMPTY_TAXES = {
+    "quantity": None,
+    "tax_code": None,
+    "full_name": None,
+    "short_name": None,
+    "tax_amount": None,
+    "taxable_amount": None,
+}
+
+
 def _build_item(it: dict, iva_incluido: bool) -> dict:
+    # ``taxes`` MUST be an object with null fields when no explicit tax is
+    # specified — sending ``[]`` triggers FELplex's misleading
+    # "problemas de comunicación con SAT" rejection.
     return {
         "qty": float(it["cantidad"]),
         "type": it.get("bien_o_servicio", "S"),
@@ -90,7 +103,7 @@ def _build_item(it: dict, iva_incluido: bool) -> dict:
         "without_iva": 0 if iva_incluido else 1,
         "discount": float(it.get("descuento", 0)),
         "is_discount_percentage": 0,
-        "taxes": [],
+        "taxes": dict(_EMPTY_TAXES),
     }
 
 
@@ -114,7 +127,7 @@ def build_felplex_payload(invoice_dict: dict) -> dict:
                 "without_iva": 0 if iva_incluido else 1,
                 "discount": 0,
                 "is_discount_percentage": 0,
-                "taxes": [],
+                "taxes": dict(_EMPTY_TAXES),
             }
         )
 

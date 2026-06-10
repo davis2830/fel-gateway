@@ -81,6 +81,28 @@ def test_build_payload_includes_to_when_not_cf() -> None:
     assert pld["items"][0]["price"] == 100.0
 
 
+def test_build_payload_taxes_must_be_object_not_array() -> None:
+    """Regression: FELplex rejects items where ``taxes`` is ``[]``.
+
+    The API expects an object with null fields when no explicit tax is
+    declared; sending an empty array surfaces as a misleading
+    "problemas de comunicación con SAT" error.
+    """
+    pld = build_felplex_payload(_payload())
+    taxes = pld["items"][0]["taxes"]
+    assert isinstance(taxes, dict), (
+        f"taxes must be an object, got {type(taxes).__name__}: {taxes!r}"
+    )
+    assert taxes == {
+        "quantity": None,
+        "tax_code": None,
+        "full_name": None,
+        "short_name": None,
+        "tax_amount": None,
+        "taxable_amount": None,
+    }
+
+
 def test_build_payload_omits_to_when_cf() -> None:
     inv = _payload()
     inv["receptor"]["nit"] = "CF"
