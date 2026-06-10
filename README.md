@@ -139,6 +139,19 @@ e.g. for FELplex:
 }
 ```
 
+FELplex base URLs (Guatemala):
+
+| Ambiente | URL |
+|---|---|
+| Sandbox | `https://felplex-gt.stage.plex.lat` |
+| Producción | `https://app.felplex.com` |
+
+The `-gt` country suffix is mandatory in the sandbox host. The adapter
+selects the right URL automatically from the tenant's `ambiente`; you
+only need to set `base_url` in `provider_config` if you want to point
+to a different country (e.g. `https://felplex-sv.stage.plex.lat`
+for El Salvador) or override for a private deployment.
+
 ## Adding a new provider
 
 1. Implement `app.adapters.base.CertificadorBase` in
