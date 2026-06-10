@@ -235,3 +235,48 @@ async def test_consultar_nit_returns_name() -> None:
         r = await adapter.consultar_nit("12345678")
     assert r.ok is True
     assert r.nombre == "Empresa Demo S.A."
+
+
+@pytest.mark.asyncio
+async def test_consultar_nit_parses_list_response() -> None:
+    """FELplex returns a JSON array; adapter must pick the first record
+    and flatten the structured ``address`` into a single string."""
+    adapter = _adapter()
+    url = f"{SANDBOX}/api/entity/ent1/find/NIT/7100531"
+    with respx.mock(assert_all_called=False) as mock:
+        mock.get(url).respond(
+            200,
+            json=[
+                {
+                    "id": 4566,
+                    "tax_code_type": "NIT",
+                    "tax_code": "7100531",
+                    "tax_name": "PEGAMORTEROS DE GUATEMALA S.A.",
+                    "name": "PEGAMORTEROS DE GUATEMALA S.A.",
+                    "address": {
+                        "street": "KM 29.3 CA-9 SUR",
+                        "city": "Amatitlán",
+                        "state": "GU",
+                        "zip": "01067",
+                        "country": "GT",
+                    },
+                }
+            ],
+        )
+        r = await adapter.consultar_nit("7100531")
+    assert r.ok is True
+    assert r.nombre == "PEGAMORTEROS DE GUATEMALA S.A."
+    assert r.direccion is not None
+    assert "KM 29.3 CA-9 SUR" in r.direccion
+    assert "Amatitlán" in r.direccion
+
+
+@pytest.mark.asyncio
+async def test_consultar_nit_empty_list_returns_not_found() -> None:
+    adapter = _adapter()
+    url = f"{SANDBOX}/api/entity/ent1/find/NIT/99999999"
+    with respx.mock(assert_all_called=False) as mock:
+        mock.get(url).respond(200, json=[])
+        r = await adapter.consultar_nit("99999999")
+    assert r.ok is False
+    assert r.error is not None

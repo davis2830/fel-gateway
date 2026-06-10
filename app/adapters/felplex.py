@@ -354,11 +354,40 @@ class FELplexCertificador(CertificadorBase):
                 raw_response=data,
             )
 
-        nombre = data.get("name") or data.get("nombre") or ""
+        # FELplex returns a list (search may match multiple records).
+        record = data[0] if isinstance(data, list) and data else (
+            data if isinstance(data, dict) else None
+        )
+        if not record:
+            return NITLookupResult(
+                ok=False,
+                error="NIT no encontrado.",
+                raw_response=data,
+            )
+
+        nombre = (
+            record.get("name")
+            or record.get("tax_name")
+            or record.get("nombre")
+            or ""
+        )
+        direccion_raw = record.get("address") or record.get("direccion")
+        if isinstance(direccion_raw, dict):
+            parts = [
+                direccion_raw.get("street"),
+                direccion_raw.get("city"),
+                direccion_raw.get("state"),
+                direccion_raw.get("zip"),
+                direccion_raw.get("country"),
+            ]
+            direccion: str | None = ", ".join(p for p in parts if p) or None
+        else:
+            direccion = direccion_raw
+
         return NITLookupResult(
             ok=bool(nombre),
             nombre=nombre or None,
-            direccion=data.get("address") or data.get("direccion"),
+            direccion=direccion,
             raw_response=data,
             error=None if nombre else "Respuesta sin nombre fiscal.",
         )
